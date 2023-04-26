@@ -1,30 +1,23 @@
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
 table {
   width: 100%;
-  max-width: 1200px;
-  margin: auto;
   border-collapse: collapse;
-  text-align: left;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 table th,
 table td {
-  background-color: #f8f8f8;
-  border: 1px solid #e8e8e8;
-  padding: 10px;
+  border: 1px solid #999999;
+  padding: 5px;
 }
 
 table th {
-  background-color: #333333;
-  color: white;
+  background-color: #cccccc;
+  color: black;
 }
 
-table tr:nth-child(even) td {
+table tr {
   background-color: #ffffff;
+}
+
+table tr:nth-child(even) {
+  background-color: #f8f8f8;
 }
