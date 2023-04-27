@@ -62,7 +62,7 @@ function formSubmit(e) {
   const projectURL = $('#url').value;
 
   const team = {
-    promotion,
+      promotion,
     members,
     name: projectName,
     url: projectURL
