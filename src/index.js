@@ -36,7 +36,7 @@ function deleteTeamRequest(id, successDelete) {
   })
     .then(r => r.json())
     .then(status => {
-      console.warn("before remove", status);
+      console.warn("status before delete:", status);
       if (typeof successDelete === "function") {
         successDelete(status);
       }
@@ -57,10 +57,10 @@ function updateTeamRequest(team) {
 function getTeamAsHTML(team) {
   const id = team.id;
   const url = team.url;
-  let anchor = url;
+  let anchorURL = url;
 
   if (url.startsWith("https://")) {
-    anchor = url.substring(8);
+    anchorURL = url.substring(8);
   }
 
   return `
@@ -68,7 +68,7 @@ function getTeamAsHTML(team) {
       <td>${team.promotion}</td>
       <td>${team.members}</td>
       <td>${team.name}</td>
-      <td><a href="${url}" target="_blank">${anchor}</a></td>
+      <td><a href="${url}" target="_blank">${anchorURL}</a></td>
       <td>
         <a data-id="${id}" class="btn-link btn-delete">❌</a>
         <a data-id="${id}" class="btn-link btn-edit">✏️</a>
@@ -78,16 +78,17 @@ function getTeamAsHTML(team) {
 }
 
 let previewDisplayedTeams = [];
+
 function showTeams(teams) {
   if (teams === previewDisplayedTeams) {
-    console.info("same teams");
-    return;
+    console.warn("same teams");
+    return false;
   }
   if (teams.length === previewDisplayedTeams.length) {
     var eqContent = teams.every((team, i) => team === previewDisplayedTeams[i]);
     if (eqContent) {
-      console.info("same content");
-      return;
+      console.warn("same content");
+      return false;
     }
   }
 
@@ -96,7 +97,7 @@ function showTeams(teams) {
   $("table tbody").innerHTML = html.join("");
 }
 
-function formSubmit(e) {
+async function formSubmit(e) {
   e.preventDefault();
   const promotion = $("#promotion").value;
   const members = $("#members").value;
@@ -112,48 +113,36 @@ function formSubmit(e) {
 
   if (editID) {
     team.id = editID;
-    console.warn("update?", editID, team);
-    updateTeamRequest(team).then(status => {
-      console.info("updated?", status);
-      if (status.success) {
-        allTeams = allTeams.map(t => {
-          if (t.id === team.id) {
-            return {
-              ...t,
-              ...team
-            };
-          }
-          return t;
-        });
-
-        showTeams(allTeams);
-        $("#editForm").reset();
-      }
-    });
+    const { success } = await updateTeamRequest(team);
+    if (success) {
+      allTeams = allTeams.map(t => {
+        if (t.id === team.id) {
+          return {
+            ...t,
+            ...team
+          };
+        }
+        return t;
+      });
+    }
   } else {
-    createTeamRequest(team).then(status => {
-      console.info("created", status);
-      if (status.success) {
-        allTeams = [...allTeams, team];
-        team.id = status.id;
-        showTeams(allTeams);
-        $("#editForm").reset();
-      }
-    });
+    const { success, id } = await createTeamRequest(team);
+    if (success) {
+      team.id = id;
+      allTeams = [...allTeams, team];
+    }
   }
+
+  showTeams(allTeams) && $("#editForm").reset();
 }
 
-function deleteTeam(id) {
-  console.warn("delete", id);
-  deleteTeamRequest(id, () => {
-    console.info("callback success");
-    return id;
-  }).then(status => {
-    console.warn("status", status);
-    if (status.success) {
-      loadTeams();
-    }
-  });
+async function deleteTeam(id) {
+  console.warn("delete:", id);
+  const { success } = await deleteTeamRequest(id);
+  if (success) {
+    allTeams = allTeams.filter(t => t.id !== id);
+    showTeams(allTeams);
+  }
 }
 
 function startEditTeam(id) {
@@ -202,15 +191,29 @@ function initEvents() {
   });
 }
 
-function loadTeams(cb) {
-  return getTeamsRequest().then(teams => {
-    allTeams = teams;
-    showTeams(teams);
-    if (typeof cb === "function") {
-      cb();
-    }
+async function loadTeams(cb) {
+  const teams = await getTeamsRequest();
+  allTeams = teams;
+  showTeams(teams);
+  if (typeof cb === "function") {
+    cb();
+  }
+  return teams;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
   });
 }
 
-loadTeams();
+(async () => {
+  $("#editForm").classList.add("loading-mask");
+  await loadTeams();
+  await sleep(500);
+  $("#editForm").classList.remove("loading-mask");
+})();
+
 initEvents();
