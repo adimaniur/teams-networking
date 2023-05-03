@@ -95,21 +95,12 @@ function showTeams(teams) {
   previewDisplayedTeams = teams;
   const html = teams.map(getTeamAsHTML);
   $("table tbody").innerHTML = html.join("");
+  return true;
 }
 
 async function formSubmit(e) {
   e.preventDefault();
-  const promotion = $("#promotion").value;
-  const members = $("#members").value;
-  const projectName = $("#project").value;
-  const projectURL = $("#url").value;
-
-  const team = {
-    promotion,
-    members,
-    name: projectName,
-    url: projectURL
-  };
+  const team = getFormValues();
 
   if (editID) {
     team.id = editID;
@@ -136,6 +127,28 @@ async function formSubmit(e) {
   showTeams(allTeams) && $("#editForm").reset();
 }
 
+function getFormValues() {
+  const promotion = $("#promotion").value;
+  const members = $("#members").value;
+  const projectName = $("#project").value;
+  const projectURL = $("#url").value;
+
+  const team = {
+    promotion,
+    members,
+    name: projectName,
+    url: projectURL
+  };
+  return team;
+}
+
+function setFormValues({ promotion, members, name, url }) {
+  $("#promotion").value = promotion;
+  $("#members").value = members;
+  $("#project").value = name;
+  $("#url").value = url;
+}
+
 async function deleteTeam(id) {
   console.warn("delete:", id);
   const { success } = await deleteTeamRequest(id);
@@ -148,11 +161,7 @@ async function deleteTeam(id) {
 function startEditTeam(id) {
   editID = id;
   const team = allTeams.find(team => team.id === id);
-
-  $("#promotion").value = team.promotion;
-  $("#members").value = team.members;
-  $("#project").value = team.name;
-  $("#url").value = team.url;
+  setFormValues(team);
 }
 
 function searchTeams(teams, search) {
@@ -212,7 +221,7 @@ function sleep(ms) {
 (async () => {
   $("#editForm").classList.add("loading-mask");
   await loadTeams();
-  await sleep(500);
+  await sleep(200);
   $("#editForm").classList.remove("loading-mask");
 })();
 

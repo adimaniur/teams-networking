@@ -50,7 +50,7 @@ table tr:nth-child(even) {
 }
 
 .loading-mask::after {
-  content: "💠";
+  content: "🐻‍❄️";
   text-align: center;
   /* content: ""; */
 
