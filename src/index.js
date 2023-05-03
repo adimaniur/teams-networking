@@ -55,29 +55,49 @@ function updateTeamRequest(team) {
 }
 
 function getTeamAsHTML(team) {
+  const id = team.id;
+  const url = team.url;
+  let anchor = url;
+
+  if (url.startsWith("https://")) {
+    anchor = url.substring(8);
+  }
+
   return `
     <tr>
       <td>${team.promotion}</td>
       <td>${team.members}</td>
       <td>${team.name}</td>
-      <td>${team.url}</td>
+      <td><a href="${url}" target="_blank">${anchor}</a></td>
       <td>
-        <a data-id="${team.id}" class="btn-link btn-delete">❌</a>
-        <a data-id="${team.id}" class="btn-link btn-edit">✏️</a>
+        <a data-id="${id}" class="btn-link btn-delete">❌</a>
+        <a data-id="${id}" class="btn-link btn-edit">✏️</a>
       </td>
     </tr>
   `;
 }
 
+let previewDisplayedTeams = [];
 function showTeams(teams) {
+  if (teams === previewDisplayedTeams) {
+    console.info("same teams");
+    return;
+  }
+  if (teams.length === previewDisplayedTeams.length) {
+    var eqContent = teams.every((team, i) => team === previewDisplayedTeams[i]);
+    if (eqContent) {
+      console.info("same content");
+      return;
+    }
+  }
+
+  previewDisplayedTeams = teams;
   const html = teams.map(getTeamAsHTML);
   $("table tbody").innerHTML = html.join("");
 }
 
 function formSubmit(e) {
   e.preventDefault();
-  console.warn("submit", e);
-
   const promotion = $("#promotion").value;
   const members = $("#members").value;
   const projectName = $("#project").value;
@@ -96,20 +116,26 @@ function formSubmit(e) {
     updateTeamRequest(team).then(status => {
       console.info("updated?", status);
       if (status.success) {
-        loadTeams().then(() => {
-          $("#editForm").reset();
+        allTeams = allTeams.map(t => {
+          if (t.id === team.id) {
+            return {
+              ...t,
+              ...team
+            };
+          }
+          return t;
         });
+
+        showTeams(allTeams);
+        $("#editForm").reset();
       }
     });
   } else {
     createTeamRequest(team).then(status => {
       console.info("created", status);
       if (status.success) {
-        // loadTeams().then(() => {
-        //   $("#editForm").reset();
-        // });
+        allTeams = [...allTeams, team];
         team.id = status.id;
-        allTeams.push(team);
         showTeams(allTeams);
         $("#editForm").reset();
       }
