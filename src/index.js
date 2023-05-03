@@ -105,9 +105,13 @@ function formSubmit(e) {
     createTeamRequest(team).then(status => {
       console.info("created", status);
       if (status.success) {
-        loadTeams().then(() => {
-          $("#editForm").reset();
-        });
+        // loadTeams().then(() => {
+        //   $("#editForm").reset();
+        // });
+        team.id = status.id;
+        allTeams.push(team);
+        showTeams(allTeams);
+        $("#editForm").reset();
       }
     });
   }
