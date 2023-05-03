@@ -25,3 +25,11 @@ table tr {
 table tr:nth-child(even) {
   background-color: #f8f8f8;
 }
+
+.btn-link {
+  padding: 10px;
+}
+
+.container-search {
+  margin-bottom: 10px;
+}
