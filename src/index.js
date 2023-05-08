@@ -1,58 +1,9 @@
+// import debounce from "lodash/debounce";
+import { getTeamsRequest, createTeamRequest, deleteTeamRequest, updateTeamRequest } from "./js/requests";
+import { $, debounce, sleep } from "./js/utils";
+
 let allTeams = [];
 let editID;
-
-function $(selector) {
-  return document.querySelector(selector);
-}
-
-function getTeamsRequest() {
-  return fetch("http://localhost:3000/teams-json", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json"
-    }
-  }).then(r => {
-    return r.json();
-  });
-}
-
-function createTeamRequest(team) {
-  return fetch("http://localhost:3000/teams-json/create", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(team)
-  }).then(r => r.json());
-}
-
-function deleteTeamRequest(id, successDelete) {
-  return fetch("http://localhost:3000/teams-json/delete", {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ id })
-  })
-    .then(r => r.json())
-    .then(status => {
-      console.warn("status before delete:", status);
-      if (typeof successDelete === "function") {
-        successDelete(status);
-      }
-      return status;
-    });
-}
-
-function updateTeamRequest(team) {
-  return fetch("http://localhost:3000/teams-json/update", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(team)
-  }).then(r => r.json());
-}
 
 function getTeamAsHTML(team) {
   const id = team.id;
@@ -65,13 +16,17 @@ function getTeamAsHTML(team) {
 
   return `
     <tr>
-      <td>${team.promotion}</td>
-      <td>${team.members}</td>
-      <td>${team.name}</td>
-      <td><a href="${url}" target="_blank">${anchorURL}</a></td>
       <td>
-        <a data-id="${id}" class="btn-link btn-delete">❌</a>
+        <input type="checkbox" name="selected" class="row-checkbox">
+      </td>
+      <td class="team-promotion">${team.promotion}</td>
+      <td class="team-members">${team.members}</td>
+      <td>${team.name}</td>
+      <td>${anchorURL}</td>
+      <td>
+        <a href="${url}" target="_blank" class="btn-link btn-url" >🔗</a>
         <a data-id="${id}" class="btn-link btn-edit">✏️</a>
+        <a data-id="${id}" class="btn-link btn-delete">❌</a>
       </td>
     </tr>
   `;
@@ -176,6 +131,11 @@ function searchTeams(teams, search) {
   });
 }
 
+function removeSelected() {
+  console.warn("removeSelected");
+  // find id, add mask, call remove deleteTeamRequest, remove mask
+}
+
 function initEvents() {
   const form = $("#editForm");
   form.addEventListener("submit", formSubmit);
@@ -183,11 +143,17 @@ function initEvents() {
     editID = undefined;
   });
 
-  $("#search").addEventListener("input", e => {
-    const search = e.target.value;
-    const teams = searchTeams(allTeams, search);
-    showTeams(teams);
-  });
+  $("#remove-all-boxes").addEventListener("click", removeSelected);
+
+  $("#search").addEventListener(
+    "input",
+    debounce(function (e) {
+      const search = e.target.value;
+      console.warn("search:", search);
+      const teams = searchTeams(allTeams, search);
+      showTeams(teams);
+    }, 300)
+  );
 
   $("#editForm tbody").addEventListener("click", e => {
     if (e.target.matches("a.btn-delete")) {
@@ -210,19 +176,29 @@ async function loadTeams(cb) {
   return teams;
 }
 
-function sleep(ms) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve();
-    }, ms);
-  });
-}
-
 (async () => {
-  $("#editForm").classList.add("loading-mask");
+  $(".wrapper").classList.add("loading-mask");
   await loadTeams();
-  await sleep(200);
-  $("#editForm").classList.remove("loading-mask");
+  await sleep(100);
+  $(".wrapper").classList.remove("loading-mask");
 })();
+
+const selectAllButton = document.getElementById("select-all-boxes");
+const removeAllButton = document.getElementById("remove-all-boxes");
+let boxesChecked = false;
+
+selectAllButton.addEventListener("click", function () {
+  const form = document.getElementById("editForm");
+  const checkboxes = form.querySelectorAll("input.row-checkbox");
+
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = !boxesChecked;
+  });
+
+  boxesChecked = !boxesChecked;
+
+  selectAllButton.innerText = boxesChecked ? "Uncheck all rows" : "Check all rows";
+  removeAllButton.classList.toggle("show", boxesChecked);
+});
 
 initEvents();

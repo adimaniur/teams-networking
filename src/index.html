@@ -11,43 +11,49 @@
 </head>
 
 <body>
-  <div class="container-search">
-    <input type="search" name="search" id="search">
+  <div class="wrapper">
+    <form id="editForm" method="post" action="">
+      <div class="aside">
+        <div class="aside-content">
+          <div class="aside-search">
+            <span>🔍</span>
+            <input type="search" name="search" id="search">
+          </div>
+          <div class="aside-row">
+            <input type="text" name="promotion" id="promotion" placeholder="Add skill" required>
+          </div>
+          <div class="aside-row"><input type="text" name="members" id="members" placeholder="Add member" required>
+          </div>
+          <div class="aside-row"><input type="text" name="project" id="project" placeholder="Add project name" required>
+          </div>
+          <div class="aside-row"><input type="text" name="url" id="url" placeholder="Add URL" required></div>
+          <div class="aside-buttons">
+            <button class="btn-save" type="submit">Save</button>
+            <button class="btn-reset" type="reset">Reset fields</button>
+          </div>
+          <div class="aside-delete-all">
+            <div id="select-all-boxes">Check all rows</div>
+            <div id="remove-all-boxes"><span>Delete</div>
+          </div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Skill</th>
+            <th>Members</th>
+            <th>Project name</th>
+            <th>URL</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+
+    </form>
   </div>
-  <form id="editForm" method="post" action="">
-    <table>
-      <thead>
-        <tr>
-          <th>Promotion</th>
-          <th>Members</th>
-          <th>Project name</th>
-          <th>URL</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <td>
-            <input type="text" name="promotion" id="promotion" placeholder="Enter promotion" required>
-          </td>
-          <td>
-            <input type="text" name="members" id="members" placeholder="Enter members" required>
-          </td>
-          <td>
-            <input type="text" name="project" id="project" placeholder="Enter project name" required>
-          </td>
-          <td>
-            <input type="text" name="url" id="url" placeholder="Enter URL" required>
-          </td>
-          <td>
-            <button type="submit">💾</button>
-            <button type="reset">❌</button>
-          </td>
-        </tr>
-      </tfoot>
-    </table>
-  </form>
 </body>
 
 </html>
